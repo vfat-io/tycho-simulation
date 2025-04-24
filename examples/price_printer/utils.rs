@@ -17,6 +17,7 @@ pub(super) fn get_default_url(chain: &Chain) -> Option<String> {
         Chain::Ethereum => Some("tycho-beta.propellerheads.xyz".to_string()),
         Chain::Base => Some("tycho-base-beta.propellerheads.xyz".to_string()),
         Chain::Unichain => Some("tycho-unichain-beta.propellerheads.xyz".to_string()),
+        Chain::Worldchain => Some("localhost:4242".to_string()),
         _ => None,
     }
 }

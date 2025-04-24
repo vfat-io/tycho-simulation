@@ -87,6 +87,7 @@ impl Cli {
                 "ethereum" => "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2".to_string(),
                 "base" => "0x4200000000000000000000000000000000000006".to_string(),
                 "unichain" => "0x4200000000000000000000000000000000000006".to_string(),
+                "worldchain" => "0x4200000000000000000000000000000000000006".to_string(),
                 _ => panic!("Execution does not yet support chain {}", self.chain),
             });
         }
@@ -96,6 +97,7 @@ impl Cli {
                 "ethereum" => "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48".to_string(),
                 "base" => "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913".to_string(),
                 "unichain" => "0x078d782b760474a361dda0af3839290b0ef57ad6".to_string(),
+                "worldchain" => "0x79a02482a880bce3f13e09da970dc34db4cd24d1".to_string(),
                 _ => panic!("Execution does not yet support chain {}", self.chain),
             });
         }
@@ -205,6 +207,10 @@ async fn main() {
                     tvl_filter.clone(),
                     Some(uniswap_v4_pool_with_hook_filter),
                 )
+        }
+        Chain::Worldchain => {
+            protocol_stream = protocol_stream
+                .exchange::<UniswapV3State>("uniswap_v3", tvl_filter.clone(), None)
         }
         _ => {}
     }

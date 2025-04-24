@@ -84,6 +84,10 @@ fn register_exchanges(
                     Some(uniswap_v4_pool_with_hook_filter),
                 )
         }
+        Chain::Worldchain => {
+            builder = builder
+                .exchange::<UniswapV3State>("uniswap_v3", tvl_filter.clone(), None)
+        }
         _ => {}
     }
     builder
