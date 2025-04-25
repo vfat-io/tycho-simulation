@@ -67,7 +67,7 @@ pub async fn load_all_tokens(
     rpc_client
         .get_all_tokens(
             chain.into(),
-            min_quality.or(Some(100)),
+            min_quality.or(Some(0)),
             max_days_since_last_trade.or(default_min_days
                 .get(&chain)
                 .or(Some(&42))
