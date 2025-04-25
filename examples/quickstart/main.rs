@@ -32,10 +32,10 @@ use tycho_common::Bytes;
 pub mod utils;
 use tycho_execution::encoding::{
     evm::{
-        encoder_builder::EVMEncoderBuilder, tycho_encoder::EVMTychoEncoder, utils::encode_input,
+        encoder_builders::TychoRouterEncoderBuilder, utils::encode_input
     },
     models::{Solution, Swap, Transaction},
-    tycho_encoder::TychoEncoder,
+    tycho_encoder::TychoEncoder
 };
 use tycho_simulation::{
     evm::{
@@ -63,16 +63,16 @@ const FAKE_PK: &str = "0x123456789abcdef123456789abcdef123456789abcdef123456789a
 
 #[derive(Parser)]
 struct Cli {
-    #[arg(short, long)]
+    #[arg(long)]
     sell_token: Option<String>,
-    #[arg(short, long)]
+    #[arg(long)]
     buy_token: Option<String>,
-    #[arg(short, long, default_value_t = 10.0)]
+    #[arg(long, default_value_t = 10.0)]
     sell_amount: f64,
     /// The tvl threshold to filter the graph by
-    #[arg(short, long, default_value_t = 100.0)]
+    #[arg(long, default_value_t = 100.0)]
     tvl_threshold: f64,
-    #[arg(short, long, default_value = FAKE_PK)]
+    #[arg(long, default_value = FAKE_PK)]
     swapper_pk: String,
     #[arg(short, long, default_value = "ethereum")]
     chain: String,
@@ -129,7 +129,7 @@ async fn main() {
 
     println!("Loading tokens from Tycho... {}", tycho_url.as_str());
     let all_tokens =
-        load_all_tokens(tycho_url.as_str(), false, Some(tycho_api_key.as_str()), chain, None, None)
+        load_all_tokens(tycho_url.as_str(), true, Some(tycho_api_key.as_str()), chain, None, None)
             .await;
     println!("Tokens loaded: {}", all_tokens.len());
 
@@ -225,10 +225,9 @@ async fn main() {
         .expect("Failed building protocol stream");
 
     // Initialize the encoder
-    let encoder = EVMEncoderBuilder::new()
+    let encoder = TychoRouterEncoderBuilder::new()
         .chain(chain)
-        .initialize_tycho_router_with_permit2(cli.swapper_pk.clone())
-        .expect("Failed to create encoder builder")
+        .swapper_pk(cli.swapper_pk.clone())
         .build()
         .expect("Failed to build encoder");
 
@@ -277,7 +276,7 @@ async fn main() {
             let expected_amount_copy = expected_amount.clone();
 
             let tx = encode(
-                encoder.clone(),
+                &encoder,
                 component,
                 sell_token.clone(),
                 buy_token.clone(),
@@ -498,7 +497,7 @@ async fn main() {
                     println!("\nInvalid input. Please choose 'simulate', 'execute' or 'skip'.\n");
                     continue;
                 }
-            }
+            };
         }
     }
 }
@@ -586,7 +585,7 @@ fn get_best_swap(
 
 #[allow(clippy::too_many_arguments)]
 fn encode(
-    encoder: EVMTychoEncoder,
+    encoder: &Box<dyn TychoEncoder>,
     component: ProtocolComponent,
     sell_token: Token,
     buy_token: Token,
@@ -621,7 +620,7 @@ fn encode(
 
     // Encode the solution
     encoder
-        .encode_router_calldata(vec![solution.clone()])
+        .encode_calldata(vec![solution.clone()])
         .expect("Failed to encode router calldata")[0]
         .clone()
 }
