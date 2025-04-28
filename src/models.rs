@@ -92,15 +92,14 @@ impl Hash for Token {
 
 impl TryFrom<ResponseToken> for Token {
     type Error = ModelError;
-
     fn try_from(value: ResponseToken) -> Result<Self, Self::Error> {
-        Ok(Self {
-            address: value.address,
-            decimals: value.decimals.try_into().map_err(|e| {
-                ModelError::ConversionError(format!("Failed to convert decimals: {}", e))
-            })?,
-            symbol: value.symbol.to_string(),
-            gas: BigUint::from(
+        // Default gas value to use when gas array is empty
+        let default_gas = BigUint::from(21000u64);
+        
+        let gas = if value.gas.is_empty() {
+            default_gas
+        } else {
+            BigUint::from(
                 value
                     .gas
                     .into_iter()
@@ -111,8 +110,17 @@ impl TryFrom<ResponseToken> for Token {
                     .copied()
                     .ok_or_else(|| {
                         ModelError::MissingData("Gas attribute is missing".to_string())
-                    })?,
-            ),
+                    })?
+            )
+        };
+
+        Ok(Self {
+            address: value.address,
+            decimals: value.decimals.try_into().map_err(|e| {
+                ModelError::ConversionError(format!("Failed to convert decimals: {}", e))
+            })?,
+            symbol: value.symbol.to_string(),
+            gas,
         })
     }
 }
