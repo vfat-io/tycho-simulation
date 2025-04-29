@@ -31,11 +31,9 @@ use tracing_subscriber::EnvFilter;
 use tycho_common::Bytes;
 pub mod utils;
 use tycho_execution::encoding::{
-    evm::{
-        encoder_builders::TychoRouterEncoderBuilder, utils::encode_input
-    },
+    evm::{encoder_builders::TychoRouterEncoderBuilder, utils::encode_input},
     models::{Solution, Swap, Transaction},
-    tycho_encoder::TychoEncoder
+    tycho_encoder::TychoEncoder,
 };
 use tycho_simulation::{
     evm::{
@@ -209,14 +207,14 @@ async fn main() {
                 )
         }
         Chain::Worldchain => {
-            protocol_stream = protocol_stream
-                .exchange::<UniswapV3State>("uniswap_v3", tvl_filter.clone(), None)
+            protocol_stream =
+                protocol_stream.exchange::<UniswapV3State>("uniswap_v3", tvl_filter.clone(), None)
         }
         _ => {}
     }
 
     let mut protocol_stream = protocol_stream
-        .auth_key(Some(tycho_api_key.clone()))
+        // .auth_key(Some(tycho_api_key.clone()))
         .skip_state_decode_failures(true)
         .set_tokens(all_tokens.clone())
         .await
@@ -236,8 +234,12 @@ async fn main() {
     )
     .expect("Failed to private key signer");
     let tx_signer = EthereumWallet::from(wallet.clone());
-    let named_chain =
-        NamedChain::from_str(&cli.chain.replace("ethereum", "mainnet")).expect("Invalid chain");
+    let named_chain = NamedChain::from_str(
+        &cli.chain
+            .replace("ethereum", "mainnet")
+            .replace("worldchain", "world"),
+    )
+    .expect("Invalid chain");
     let provider = ProviderBuilder::new()
         .with_chain(named_chain)
         .wallet(tx_signer.clone())
