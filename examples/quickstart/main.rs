@@ -125,6 +125,10 @@ async fn main() {
 
     let tvl_filter = ComponentFilter::with_tvl_range(cli.tvl_threshold, cli.tvl_threshold);
 
+    let id_filter = ComponentFilter::Ids(vec![
+        "0x5f835420502a7702de50cd0e78d8aa3608b2137e".to_string(), // Worldchain ETH / USDC.e
+    ]);
+
     println!("Loading tokens from Tycho... {}", tycho_url.as_str());
     let all_tokens =
         load_all_tokens(tycho_url.as_str(), true, Some(tycho_api_key.as_str()), chain, None, None)
@@ -208,7 +212,7 @@ async fn main() {
         }
         Chain::Worldchain => {
             protocol_stream =
-                protocol_stream.exchange::<UniswapV3State>("uniswap_v3", tvl_filter.clone(), None)
+                protocol_stream.exchange::<UniswapV3State>("uniswap_v3", id_filter.clone(), None)
         }
         _ => {}
     }
